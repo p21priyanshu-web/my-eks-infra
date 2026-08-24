@@ -1,0 +1,17 @@
+vpc_cidr = "10.0.0.0/16"
+eks_cluster_name = "jiyna_eks"
+aws_region = "us-east-1"
+public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnets = ["10.0.10.0/24", "10.0.11.0/24"]
+project_name = "jiyna-eks-project"
+environment = "dev"
+eks_cluster_version = "1.35"
+eks_endpoint_public_access = true
+eks_endpoint_public_access_cidrs = ["0.0.0.0/0"]
+eks_endpoint_private_access = true
+node_volume_size = 20
+node_volume_type = "gp3"
+node_instance_types = ["t3.medium"]
+node_min_size = 1
+node_max_size = 3
+node_desired_size = 2
