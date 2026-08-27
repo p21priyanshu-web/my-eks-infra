@@ -26,25 +26,31 @@ resource "aws_security_group" "cluster" {
 # EKS Control Plane
 ###########################################################################
 resource "aws_eks_cluster" "main" {
-  name     = "${var.eks_cluster_name}"
+  name     = var.eks_cluster_name
   role_arn = aws_iam_role.cluster.arn
   version  = var.eks_cluster_version
 
   vpc_config {
-    subnet_ids              = concat(aws_subnet.public[*].id, aws_subnet.private[*].id)
+    subnet_ids              = concat(aws_subnet.jiyna_eks_public_subnet[*].id, aws_subnet.jiyna_eks_private_subnet[*].id)
     endpoint_private_access = var.eks_endpoint_private_access
     endpoint_public_access  = var.eks_endpoint_public_access
     public_access_cidrs     = var.eks_endpoint_public_access_cidrs
     security_group_ids      = [aws_security_group.cluster.id]
   }
 
-#   # Enable envelope encryption for Kubernetes Secrets using KMS CMK
-#   encryption_config {
-#     provider {
-#       key_arn = aws_kms_key.eks.arn
-#     }
-#     resources = ["secrets"]
-#   }
+  # --- MODIFICATION: EKS Access Configuration (API and ConfigMap both) ---
+  access_config {
+    authentication_mode                         = "API_AND_CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
+  }
+
+  #   # Enable envelope encryption for Kubernetes Secrets using KMS CMK
+  #   encryption_config {
+  #     provider {
+  #       key_arn = aws_kms_key.eks.arn
+  #     }
+  #     resources = ["secrets"]
+  #   }
 
   # Enable control plane logging
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
@@ -54,6 +60,17 @@ resource "aws_eks_cluster" "main" {
     aws_iam_role_policy_attachment.cluster_vpc,
     aws_cloudwatch_log_group.eks
   ]
+
+  tags = var.tags
+}
+
+###########################################################################
+# --- MODIFICATION: ADDED FOR TERRAFORM VALIDATE FIX ---
+# EKS CloudWatch Log Group for Control Plane Logging
+###########################################################################
+resource "aws_cloudwatch_log_group" "eks" {
+  name              = "/aws/eks/${var.eks_cluster_name}/cluster"
+  retention_in_days = 7
 
   tags = var.tags
 }

@@ -45,8 +45,8 @@ resource "aws_security_group" "nodes" {
   tags = merge(
     var.tags,
     {
-      Name                                                                          = "${var.project_name}-${var.environment}-node-sg"
-      "kubernetes.io/cluster/${var.project_name}-${var.environment}-cluster"        = "owned"
+      Name                                                                   = "${var.project_name}-${var.environment}-node-sg"
+      "kubernetes.io/cluster/${var.project_name}-${var.environment}-cluster" = "owned"
     }
   )
 }
@@ -66,8 +66,8 @@ resource "aws_security_group_rule" "cluster_ingress_nodes" {
 # Custom Launch Template for EKS Worker Nodes
 ###########################################################################
 resource "aws_launch_template" "nodes" {
-  name_prefix   = "${var.eks_cluster_name}-node-lt-"
-  description   = "Launch template for EKS Managed Node Group"
+  name_prefix = "${var.eks_cluster_name}-node-lt-"
+  description = "Launch template for EKS Managed Node Group"
 
   # We omit image_id to allow EKS Managed Node Group to use its standard, up-to-date EKS-Optimized AMI
 
@@ -116,7 +116,8 @@ resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.main.name
   node_group_name = "${var.project_name}-${var.environment}-node-group"
   node_role_arn   = aws_iam_role.node.arn
-  subnet_ids      = aws_subnet.private[*].id
+  # --- MODIFICATION: FIX SUBNET REFERENCE NAME TO MATCH vpc.tf ---
+  subnet_ids      = aws_subnet.jiyna_eks_private_subnet[*].id
 
   instance_types = var.node_instance_types
 
@@ -146,8 +147,8 @@ resource "aws_eks_node_group" "main" {
   tags = merge(
     var.tags,
     {
-      "k8s.io/cluster-autoscaler/enabled"                                           = "true"
-      "k8s.io/cluster-autoscaler/${var.project_name}-${var.environment}-cluster"    = "owned"
+      "k8s.io/cluster-autoscaler/enabled"                                        = "true"
+      "k8s.io/cluster-autoscaler/${var.project_name}-${var.environment}-cluster" = "owned"
     }
   )
 

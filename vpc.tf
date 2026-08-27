@@ -21,31 +21,31 @@ resource "aws_vpc" "main" {
 # Public Subnets Definition  
 ###########################################################################
 resource "aws_subnet" "jiyna_eks_public_subnet" {
-    count = 2
-    vpc_id = aws_vpc.main.id
-    cidr_block = var.public_subnets[count.index]
-    availability_zone = data.aws_availability_zones.available.names[count.index]
-    map_public_ip_on_launch = true
+  count                   = 2
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_subnets[count.index]
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  map_public_ip_on_launch = true
 
-    tags = {
-        Name = "${var.eks_cluster_name}-public-subnet-${count.index + 1}"
-        "kubernetes.io/role/elb" = "1"
-    }
+  tags = {
+    Name                     = "${var.eks_cluster_name}-public-subnet-${count.index + 1}"
+    "kubernetes.io/role/elb" = "1"
+  }
 }
 ###########################################################################
 # Private Subnets Definition  
 ###########################################################################
 resource "aws_subnet" "jiyna_eks_private_subnet" {
-    count = 2
-    vpc_id = aws_vpc.main.id
-    cidr_block = var.private_subnets[count.index]
-    availability_zone = data.aws_availability_zones.available.names[count.index]
-    map_public_ip_on_launch = false 
+  count                   = 2
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.private_subnets[count.index]
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  map_public_ip_on_launch = false
 
-    tags = {
-        Name = "${var.eks_cluster_name}-private-subnet-${count.index + 1}"
-        "kubernetes.io/role/internal-elb" = "1"
-    }
+  tags = {
+    Name                              = "${var.eks_cluster_name}-private-subnet-${count.index + 1}"
+    "kubernetes.io/role/internal-elb" = "1"
+  }
 }
 ###########################################################################
 # Internet Gateway Definition For Public Subnets
@@ -78,7 +78,7 @@ resource "aws_nat_gateway" "jiyna_eks_nat_gw" {
     Name = "${var.eks_cluster_name}-nat-gw"
   }
   depends_on = [aws_internet_gateway.jiyna_eks_igw]
-}   
+}
 ###########################################################################
 # Route Table for Public Subnets
 ###########################################################################
@@ -113,7 +113,7 @@ resource "aws_route_table" "jiyna_eks_private_rt" {
 resource "aws_route_table_association" "jiyna_eks_public_rt_assoc" {
   count          = 2
   subnet_id      = aws_subnet.jiyna_eks_public_subnet[count.index].id
-  route_table_id = aws_route_table.jiyna_eks_public_rt.id 
+  route_table_id = aws_route_table.jiyna_eks_public_rt.id
 }
 ###########################################################################
 # Associating Private Subnets with Private Route Table

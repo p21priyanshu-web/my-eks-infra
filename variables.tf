@@ -1,14 +1,14 @@
 variable "aws_region" {
-  type = string
+  type    = string
   default = "us-west-2"
 }
 variable "vpc_cidr" {
-  type = string
+  type    = string
   default = "10.0.0.0/24"
 }
 
 variable "eks_cluster_name" {
-  type = string
+  type    = string
   default = "jiyna-eks-cluster"
 }
 
@@ -19,17 +19,17 @@ variable "private_subnets" {
   type = list(string)
 }
 variable "project_name" {
-  type = string
+  type    = string
   default = "jiyna-eks-project"
 }
 variable "environment" {
-  type = string
+  type    = string
   default = "dev"
 }
 variable "tags" {
   type = map(string)
   default = {
-    "Project" = "jiyna-eks-project"
+    "Project"     = "jiyna-eks-project"
     "Environment" = "dev"
   }
 }

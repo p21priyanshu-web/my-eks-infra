@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "cluster_autoscaler_assume" {
     condition {
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
-      values   = [
+      values = [
         "system:serviceaccount:kube-system:cluster-autoscaler"
       ]
     }
@@ -104,7 +104,7 @@ data "aws_iam_policy_document" "ebs_csi_assume" {
     }
 
     condition {
-      test     = "StringEquals"
+      test = "StringEquals"
       variable = "${replace(
         aws_iam_openid_connect_provider.eks.url,
         "https://",
@@ -117,7 +117,7 @@ data "aws_iam_policy_document" "ebs_csi_assume" {
     }
 
     condition {
-      test     = "StringEquals"
+      test = "StringEquals"
       variable = "${replace(
         aws_iam_openid_connect_provider.eks.url,
         "https://",
