@@ -201,3 +201,111 @@ resource "aws_iam_role_policy_attachment" "load_balancer_controller" {
   policy_arn = aws_iam_policy.load_balancer_controller.arn
   role       = aws_iam_role.load_balancer_controller.name
 }
+
+###########################################################################
+# IRSA - S3 Access
+###########################################################################
+
+data "aws_iam_policy_document" "s3_assume" {
+
+  statement {
+
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.eks.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
+
+      values = [
+        "system:serviceaccount:prod:s3-pod"
+      ]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:aud"
+
+      values = [
+        "sts.amazonaws.com"
+      ]
+    }
+  }
+}
+
+
+###########################################################################
+# IAM Role for S3 IRSA
+###########################################################################
+
+resource "aws_iam_role" "s3_irsa" {
+
+  name = "${var.eks_cluster_name}-s3-irsa-role"
+
+  assume_role_policy = data.aws_iam_policy_document.s3_assume.json
+
+  tags = var.tags
+}
+
+###########################################################################
+# IAM Policy for S3
+###########################################################################
+
+resource "aws_iam_policy" "s3_irsa" {
+
+  name        = "${var.eks_cluster_name}-s3-policy"
+  description = "Allow EKS Pod to access S3"
+
+  policy = jsonencode({
+
+    Version = "2012-10-17"
+
+    Statement = [
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "s3:ListBucket"
+        ]
+
+        Resource = [
+          "arn:aws:s3:::jiyna-my-production-bucket" 
+        ]
+      },
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+
+        Resource = [
+          "arn:aws:s3:::jiyna-my-production-bucket/*"
+        ]
+      }
+
+    ]
+  })
+
+  tags = var.tags
+}
+
+###########################################################################
+# Attach Policy to Role
+###########################################################################
+
+resource "aws_iam_role_policy_attachment" "s3_irsa" {
+
+  role       = aws_iam_role.s3_irsa.name
+  policy_arn = aws_iam_policy.s3_irsa.arn
+
+}
